@@ -1,7 +1,9 @@
 block variables
 
+include ../components/_components.pug
+
 doctype html
-html(lang=pageLang?pageLang:"en")
+html(lang=page.lang||"en")
   head
     meta(charset="UTF-8")
     meta(http-equiv="X-UA-Compatible" content="IE=edge")
@@ -15,15 +17,16 @@ html(lang=pageLang?pageLang:"en")
     meta(name="msapplication-TileColor" content="#da532c")
     meta(name="theme-color" content="#ffffff")
 
-    title=pageTitle?pageTitle:"New Page"
-    link(rel="stylesheet" type="text/css" href='./styles/styles.min.css')
-  body
+    title=page.title||"New Page"
+
+    link(rel="stylesheet" type="text/css" href="./assets/styles/styles.min.css")
+    script(src="./assets/scripts/main.min.js" defer)
+    
+  body(class=page.class||"")
     block header
       include ../modules/_header
 
     block content
-
-    script(src='./scripts/main.min.js')
 
     block footer
       include ../modules/_footer

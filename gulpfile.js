@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 const gulp = require('gulp');
 const rename = require('gulp-rename');
-const sass = require('gulp-sass');
+const sass = require('gulp-sass')(require('sass'));
 const autoprefixer = require('gulp-autoprefixer');
 const sourcemaps = require('gulp-sourcemaps');
 const pug = require('gulp-pug');
@@ -12,17 +12,25 @@ const del = require('del');
 const plumber = require('gulp-plumber');
 const rigger = require('gulp-rigger');
 const imagemin = require('gulp-imagemin');
+const babel = require("gulp-babel");
+const gcmq = require("gulp-group-css-media-queries");
+
+const PATH = {
+  src: './src/',
+  build: './build/',
+  assets: './build/assets/',
+};
 
 function pugCompile(done) {
   gulp
-    .src('./src/*.pug')
+    .src(`${PATH.src}views/pages/**/*.pug`)
     .pipe(plumber())
     .pipe(
       pug({
         pretty: true,
       })
     )
-    .pipe(gulp.dest('./build/'))
+    .pipe(gulp.dest(PATH.build))
     .on('end', browserSync.reload);
 
   done();
@@ -30,7 +38,7 @@ function pugCompile(done) {
 
 function sassDev(done) {
   gulp
-    .src('./src/styles/styles.scss')
+    .src(`${PATH.src}styles/styles.scss`)
     .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(
@@ -45,8 +53,9 @@ function sassDev(done) {
       })
     )
     .pipe(rename({ suffix: '.min' }))
+    .pipe(gcmq())
     .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('./build/styles/'))
+    .pipe(gulp.dest(`${PATH.assets}styles/`))
     .pipe(
       browserSync.reload({
         stream: true,
@@ -58,7 +67,7 @@ function sassDev(done) {
 
 function sassProd(done) {
   gulp
-    .src('./src/styles/styles.scss')
+    .src(`${PATH.src}styles/styles.scss`)
     .pipe(plumber())
     .pipe(
       sass({
@@ -72,8 +81,9 @@ function sassProd(done) {
         cascade: false,
       })
     )
+    .pipe(gcmq())
     .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('./build/styles/'))
+    .pipe(gulp.dest(`${PATH.assets}styles/`))
     .pipe(
       browserSync.reload({
         stream: true,
@@ -85,13 +95,13 @@ function sassProd(done) {
 
 function scriptsDev(done) {
   gulp
-    .src('./src/scripts/main.js')
+    .src(`${PATH.src}scripts/main.js`)
     .pipe(plumber())
     .pipe(rigger())
     .pipe(sourcemaps.init())
     .pipe(rename({ suffix: '.min' }))
     .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('./build/scripts/'))
+    .pipe(gulp.dest(`${PATH.assets}scripts/`))
     .pipe(
       browserSync.reload({
         stream: true,
@@ -103,12 +113,17 @@ function scriptsDev(done) {
 
 function scriptsProd(done) {
   gulp
-    .src('./src/scripts/main.js')
+    .src(`${PATH.src}scripts/main.js`)
     .pipe(plumber())
     .pipe(rigger())
+    .pipe(
+      babel({
+        presets: ["@babel/env"],
+      })
+    )
     .pipe(uglify())
     .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('./build/scripts/'))
+    .pipe(gulp.dest(`${PATH.assets}scripts/`))
     .pipe(
       browserSync.reload({
         stream: true,
@@ -120,9 +135,9 @@ function scriptsProd(done) {
 
 function imagesDev(done) {
   gulp
-    .src('src/images/**/*')
+    .src(`${PATH.src}images/**/*`)
     .pipe(plumber())
-    .pipe(gulp.dest('build/images/'))
+    .pipe(gulp.dest(`${PATH.assets}images/`))
     .pipe(browserSync.stream());
 
   done();
@@ -130,7 +145,7 @@ function imagesDev(done) {
 
 function imagesProd(done) {
   gulp
-    .src('src/images/**/*')
+    .src(`${PATH.src}images/**/*`)
     .pipe(plumber())
     .pipe(imagemin([
       imagemin.gifsicle({ interlaced: true }),
@@ -143,37 +158,47 @@ function imagesProd(done) {
         ]
       })
     ]))
-    .pipe(gulp.dest('build/images/'))
+    .pipe(gulp.dest(`${PATH.assets}images/`))
     .pipe(browserSync.stream());
+
+  done();
+}
+
+function fonts(done) {
+  gulp
+    .src(`${PATH.src}fonts/**/*`)
+    .pipe(gulp.dest(`${PATH.assets}fonts`))
+    .on('end', browserSync.reload);
 
   done();
 }
 
 function resources(done) {
   gulp
-    .src('./src/resources/**/*')
-    .pipe(gulp.dest('./build/'))
+    .src(`${PATH.src}resources/**/*`)
+    .pipe(gulp.dest(PATH.build))
     .on('end', browserSync.reload);
 
   done();
 }
 
 function clean() {
-  return del('./build/**/*', { force: true });
+  return del(`${PATH.build}**/*`, { force: true });
 }
 
 function watch() {
-  gulp.watch('./src/**/*.pug', pugCompile);
-  gulp.watch('./src/styles/**/*.scss', sassDev);
-  gulp.watch('./src/scripts/**/*.js', scriptsDev);
-  gulp.watch('./src/resources/**/*', resources);
-  gulp.watch('./src/images/**/*', imagesDev);
+  gulp.watch(`${PATH.src}**/*.pug`, pugCompile);
+  gulp.watch(`${PATH.src}styles/**/*.scss`, sassDev);
+  gulp.watch(`${PATH.src}scripts/**/*.js`, scriptsDev);
+  gulp.watch(`${PATH.src}resources/**/*`, resources);
+  gulp.watch(`${PATH.src}images/**/*`, imagesDev);
+  gulp.watch(`${PATH.src}fonts/**/*`, fonts);
 }
 
 function serve(done) {
   browserSync.init({
     server: {
-      baseDir: './build',
+      baseDir: PATH.build,
     },
     host: 'localhost',
     port: 9000,
@@ -186,6 +211,7 @@ function serve(done) {
 gulp.task('default',
   gulp.series(
     resources,
+    fonts,
     imagesDev,
     gulp.parallel(pugCompile, scriptsDev),
     sassDev,
@@ -199,6 +225,7 @@ gulp.task('build',
     clean,
     gulp.series(
       resources,
+      fonts,
       imagesProd,
       pugCompile,
       scriptsProd,

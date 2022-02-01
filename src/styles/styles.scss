@@ -1,13 +1,16 @@
 // Resets
-@import "settings";
-@import "normalize";
+@import "utils/normalize";
+@import "utils/settings";
 
-// Helpers
-@import "variables";
-@import "mixins";
+// Utils
+@import "utils/variables";
+@import "utils/mixins";
 
 // Global
-@import "fonts";
-@import "global";
+@import "global/fonts";
+@import "global/global";
 
 // Styles
+@import "components/components";
+@import "modules/modules";
+@import "pages/pages";

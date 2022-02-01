@@ -1,3 +1,13 @@
 # Global
+.vscode
 node_modules
+
+# Dist folders
 build
+dist
+public
+
+# Local
+.prettierignore
+.prettierrc
+.eslintrc

@@ -16,11 +16,11 @@
   $width: _get-media-width($width, $maxmin);
 
   @if ($maxmin) {
-    @media only screen and (max-width: $width + "px") {
+    @media only screen and (max-width: ($width + "px")) {
       @content;
     }
   } @else {
-    @media only screen and (min-width: $width + "px") {
+    @media only screen and (min-width: ($width + "px")) {
       @content;
     }
   }
@@ -30,4 +30,8 @@
   @media only screen and (min-width: 993px) {
     @content;
   }
+}
+
+@function vw($px) {
+  @return calc($px / 1920 * 100) + vw;
 }
