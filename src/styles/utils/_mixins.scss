@@ -1,37 +1,4 @@
-@function _get-media-width($width, $maxmin) {
-  @if map-get($media-list, $width) {
-    $width: map-get($media-list, $width);
-
-    @if $maxmin {
-      @return $width;
-    } @else {
-      @return $width + 1;
-    }
-  } @else {
-    @return $width;
-  }
-}
-
-@mixin media($width, $maxmin: true) {
-  $width: _get-media-width($width, $maxmin);
-
-  @if ($maxmin) {
-    @media only screen and (max-width: ($width + "px")) {
-      @content;
-    }
-  } @else {
-    @media only screen and (min-width: ($width + "px")) {
-      @content;
-    }
-  }
-}
-
-@mixin hover {
-  @media only screen and (min-width: 993px) {
-    @content;
-  }
-}
-
-@function vw($px) {
-  @return calc($px / 1920 * 100) + vw;
-}
+@import "mixins/media";
+@import "mixins/hover";
+@import "mixins/vw";
+@import "mixins/font-face";
