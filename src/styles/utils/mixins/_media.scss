@@ -1,0 +1,37 @@
+$media-list: (
+  "xxs": 420,
+  "xs": 576,
+  "s": 768,
+  "m": 992,
+  "l": 1280,
+  "xl": 1600,
+  "xxl": 1920,
+);
+
+@function _get-media-width($width, $maxmin) {
+  @if map-get($media-list, $width) {
+    $width: map-get($media-list, $width);
+
+    @if $maxmin {
+      @return $width;
+    } @else {
+      @return $width + 1;
+    }
+  } @else {
+    @return $width;
+  }
+}
+
+@mixin media($width, $maxmin: true) {
+  $width: _get-media-width($width, $maxmin);
+
+  @if ($maxmin) {
+    @media only screen and (max-width: ($width + "px")) {
+      @content;
+    }
+  } @else {
+    @media only screen and (min-width: ($width + "px")) {
+      @content;
+    }
+  }
+}
