@@ -8,3 +8,4 @@ dist
 public
 
 # Local
+.package-lock.json
